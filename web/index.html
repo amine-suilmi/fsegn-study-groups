@@ -19,6 +19,7 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Find and organize in-person study groups for FSEGN first-year Business Computing students.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -31,16 +32,25 @@
 
   <title>FSEGN Study Groups</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #f4f6fa; }
+    #app-loading {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 18px; padding: 24px; box-sizing: border-box;
+      color: #102b4e; font: 500 16px system-ui, sans-serif; text-align: center;
+      background: #f4f6fa;
+    }
+    #app-loading::before {
+      content: ""; width: 34px; height: 34px; border-radius: 50%;
+      border: 4px solid #d6e1ed; border-top-color: #00a995;
+      animation: app-loading-spin 0.8s linear infinite;
+    }
+    @keyframes app-loading-spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
+  <div id="app-loading" role="status" aria-live="polite">Chargement de FSEGN Study Groups…</div>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

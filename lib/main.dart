@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/env/app_config.dart';
@@ -9,19 +11,20 @@ import 'ui/features/auth/auth_gate.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize French date formatting symbols for the student calendar
+  // Initialize French date formatting symbols for the student calendar.
   await initializeDateFormatting('fr_FR', null);
 
-  // Load environment configuration (.env)
+  // Load environment and Supabase session before the auth gate is built.
   await AppConfig.initialize();
-
-  // Initialize Supabase if valid credentials are provided
   await SupabaseService.initialize();
 
-  // Initialize Auth state
-  await AuthRepository.instance.initialize();
-
+  // Render the app before making the optional profile request to Supabase.
   runApp(const FsegnStudyGroupsApp());
+  unawaited(
+    AuthRepository.instance.initialize().catchError((Object error) {
+      debugPrint('Initial profile loading failed: $error');
+    }),
+  );
 }
 
 class FsegnStudyGroupsApp extends StatelessWidget {

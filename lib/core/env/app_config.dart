@@ -5,6 +5,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// Automatically detects if valid Supabase credentials are present,
 /// and falls back gracefully to Local Demo Mode when unconfigured.
 class AppConfig {
+  /// Android builds inject these at compile time so the values are available
+  /// in release APKs even if the dotenv asset is not loaded by the platform.
+  static const _buildSupabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  static const _buildSupabaseAnonKey =
+      String.fromEnvironment('SUPABASE_ANON_KEY');
+
   /// For web, return to the exact page hosting this app (including a GitHub
   /// Pages repository path). Native apps use the registered deep link.
   static String get authRedirectUrl {
@@ -20,20 +26,28 @@ class AppConfig {
 
   static Future<void> initialize() async {
     if (_isLoaded) return;
+
     try {
       await dotenv.load(fileName: '.env');
-      _supabaseUrl =
-          (dotenv.env['SUPABASE_URL'] ?? dotenv.env['SUPABASE_PROJECT_URL'])
-              ?.trim();
-      _supabaseAnonKey = (dotenv.env['SUPABASE_ANON_KEY'] ??
-              dotenv.env['SUPABASE_PUBLISHABLE_KEY'] ??
-              dotenv.env['SUPABASE_KEY'])
-          ?.trim();
     } catch (_) {
-      // .env missing or failed to load; default to Demo Mode
-      _supabaseUrl = null;
-      _supabaseAnonKey = null;
+      // The dotenv asset is optional when credentials are injected at build time.
     }
+
+    final dotenvUrl =
+        dotenv.env['SUPABASE_URL'] ?? dotenv.env['SUPABASE_PROJECT_URL'];
+    final dotenvKey = dotenv.env['SUPABASE_ANON_KEY'] ??
+        dotenv.env['SUPABASE_PUBLISHABLE_KEY'] ??
+        dotenv.env['SUPABASE_KEY'];
+
+    _supabaseUrl = (_buildSupabaseUrl.isNotEmpty
+            ? _buildSupabaseUrl
+            : dotenvUrl)
+        ?.trim();
+    _supabaseAnonKey = (_buildSupabaseAnonKey.isNotEmpty
+            ? _buildSupabaseAnonKey
+            : dotenvKey)
+        ?.trim();
+
     _isLoaded = true;
   }
 

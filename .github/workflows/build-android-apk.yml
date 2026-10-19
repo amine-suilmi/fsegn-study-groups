@@ -60,7 +60,7 @@ jobs:
           retention-days: 14
 
       - name: Publish public GitHub Release
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash

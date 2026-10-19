@@ -41,22 +41,51 @@ class AppConfig {
         dotenvValues['SUPABASE_PUBLISHABLE_KEY'] ??
         dotenvValues['SUPABASE_KEY'];
 
-    _supabaseUrl = (_buildSupabaseUrl.isNotEmpty
-            ? _buildSupabaseUrl
-            : dotenvUrl)
-        ?.trim();
-    _supabaseAnonKey = (_buildSupabaseAnonKey.isNotEmpty
-            ? _buildSupabaseAnonKey
-            : dotenvKey)
-        ?.trim();
+    _supabaseUrl = _cleanValue(
+      _buildSupabaseUrl.isNotEmpty ? _buildSupabaseUrl : dotenvUrl,
+      const ['SUPABASE_URL', 'SUPABASE_PROJECT_URL'],
+    );
+    _supabaseAnonKey = _cleanValue(
+      _buildSupabaseAnonKey.isNotEmpty ? _buildSupabaseAnonKey : dotenvKey,
+      const [
+        'SUPABASE_ANON_KEY',
+        'SUPABASE_PUBLISHABLE_KEY',
+        'SUPABASE_KEY',
+      ],
+    );
 
     _isLoaded = true;
+  }
+
+  /// Accept both a raw value and common copied forms like
+  /// SUPABASE_URL=https://... or "https://...".
+  static String? _cleanValue(String? value, List<String> variableNames) {
+    if (value == null) return null;
+    var cleaned = value.trim();
+
+    for (final variableName in variableNames) {
+      final prefix = '$variableName=';
+      if (cleaned.startsWith(prefix)) {
+        cleaned = cleaned.substring(prefix.length).trim();
+        break;
+      }
+    }
+
+    if (cleaned.length >= 2) {
+      final first = cleaned[0];
+      final last = cleaned[cleaned.length - 1];
+      if ((first == '"' && last == '"') || (first == "'" && last == "'")) {
+        cleaned = cleaned.substring(1, cleaned.length - 1).trim();
+      }
+    }
+
+    return cleaned.isEmpty ? null : cleaned;
   }
 
   static String get supabaseUrl => _supabaseUrl ?? '';
   static String get supabaseAnonKey => _supabaseAnonKey ?? '';
 
-  /// Returns true if valid live Supabase credentials are configured.
+  /// Returns true if valid Supabase credentials are configured.
   static bool get hasValidSupabaseKeys {
     if (_supabaseUrl == null || _supabaseAnonKey == null) return false;
     if (_supabaseUrl!.isEmpty || _supabaseAnonKey!.isEmpty) return false;

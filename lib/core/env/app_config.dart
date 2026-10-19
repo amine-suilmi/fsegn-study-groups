@@ -27,17 +27,19 @@ class AppConfig {
   static Future<void> initialize() async {
     if (_isLoaded) return;
 
+    Map<String, String> dotenvValues = const {};
     try {
       await dotenv.load(fileName: '.env');
+      dotenvValues = dotenv.env;
     } catch (_) {
       // The dotenv asset is optional when credentials are injected at build time.
     }
 
     final dotenvUrl =
-        dotenv.env['SUPABASE_URL'] ?? dotenv.env['SUPABASE_PROJECT_URL'];
-    final dotenvKey = dotenv.env['SUPABASE_ANON_KEY'] ??
-        dotenv.env['SUPABASE_PUBLISHABLE_KEY'] ??
-        dotenv.env['SUPABASE_KEY'];
+        dotenvValues['SUPABASE_URL'] ?? dotenvValues['SUPABASE_PROJECT_URL'];
+    final dotenvKey = dotenvValues['SUPABASE_ANON_KEY'] ??
+        dotenvValues['SUPABASE_PUBLISHABLE_KEY'] ??
+        dotenvValues['SUPABASE_KEY'];
 
     _supabaseUrl = (_buildSupabaseUrl.isNotEmpty
             ? _buildSupabaseUrl

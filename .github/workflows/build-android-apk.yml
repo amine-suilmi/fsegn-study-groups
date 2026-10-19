@@ -28,7 +28,7 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Configure Supabase environment
+      - name: Validate Supabase configuration
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -38,6 +38,33 @@ jobs:
             echo "Add SUPABASE_URL and SUPABASE_ANON_KEY as repository Actions secrets."
             exit 1
           fi
+
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlparse
+
+          value = os.environ["SUPABASE_URL"].strip()
+          if value.startswith("SUPABASE_URL="):
+              value = value[len("SUPABASE_URL="):].strip()
+          if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+              value = value[1:-1].strip()
+
+          parsed = urlparse(value)
+          expected_host = "oulufhpzmywuftxzfkfj.supabase.co"
+          if parsed.scheme != "https" or parsed.hostname != expected_host:
+              raise SystemExit(
+                  "SUPABASE_URL must be the HTTPS API URL for the FSEGN project. "
+                  "The saved GitHub secret does not match."
+              )
+          print("Supabase project URL check passed.")
+          PY
+
+      - name: Configure Supabase environment
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
           printf 'SUPABASE_URL=%s\nSUPABASE_ANON_KEY=%s\n' \
             "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > .env
 

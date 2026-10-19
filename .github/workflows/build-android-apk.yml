@@ -7,7 +7,7 @@ on:
       - ".github/workflows/build-android-apk.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -46,10 +46,24 @@ jobs:
           flutter pub get
           flutter build apk --release
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: fsegn-study-groups-android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish public GitHub Release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TAG="beta-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" \
+            build/app/outputs/flutter-apk/app-release.apk \
+            --target "$GITHUB_SHA" \
+            --title "FSEGN Study Groups Beta ${GITHUB_RUN_NUMBER}" \
+            --notes "Install this beta APK directly on Android. Built from commit ${GITHUB_SHA}." \
+            --latest

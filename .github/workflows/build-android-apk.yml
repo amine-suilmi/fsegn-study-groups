@@ -6,6 +6,9 @@ on:
     paths:
       - ".github/workflows/build-android-apk.yml"
       - "lib/**"
+      - "android/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
 
 permissions:
   contents: write
